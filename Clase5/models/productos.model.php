@@ -8,7 +8,8 @@ class Producto
     {
         $con = new ClaseConectar();
         $con = $con->ProcedimientoParaConectar();
-        $cadena = "SELECT p.idProductos, 
+        $cadena =
+            /*SELECT p.idProductos, 
        p.Codigo_Barras, 
        p.Nombre_Producto, 
        p.Graba_IVA, 
@@ -23,7 +24,33 @@ FROM `Productos` p
 INNER JOIN `Unidad_Medida` u ON p.idProductos = u.idUnidad_Medida
 INNER JOIN `IVA` i ON p.Graba_IVA = i.idIVA
 INNER JOIN `Kardex` k ON p.idProductos = k.Productos_idProductos
-where k.`Estado` = 1
+where k.`Estado` = 1*/
+            "SELECT
+            productos.idProductos,
+            productos.Codigo_Barras,
+            productos.Nombre_Producto,
+            productos.Graba_IVA,
+            unidad_medida.Detalle AS Unidad_Medida,
+            iva.Detalle AS IVA_Detalle,
+            kardex.Cantidad,
+            kardex.Valor_Compra,
+            kardex.Valor_Venta,
+            kardex.Fecha_Transaccion,
+            kardex.Tipo_Transaccion,
+            kardex.idKardex
+        FROM
+            productos
+            INNER JOIN kardex ON  productos.idProductos = kardex.Productos_idProductos
+            INNER JOIN iva ON kardex.IVA_idIVA = iva.idIVA
+            INNER JOIN proveedores ON kardex.Proveedores_idProveedores = proveedores.idProveedores
+            INNER JOIN unidad_medida ON
+                kardex.Unidad_Medida_idUnidad_Medida = unidad_medida.idUnidad_Medida AND
+                kardex.Unidad_Medida_idUnidad_Medida1 = unidad_medida.idUnidad_Medida AND
+                kardex.Unidad_Medida_idUnidad_Medida2 = unidad_medida.idUnidad_Medida
+        WHERE
+            kardex.Estado = 1
+        ORDER BY
+            productos.Nombre_Producto
 ";
         $datos = mysqli_query($con, $cadena);
         $con->close();
@@ -34,11 +61,41 @@ where k.`Estado` = 1
     {
         $con = new ClaseConectar();
         $con = $con->ProcedimientoParaConectar();
-        $cadena = "SELECT p.*, u.Detalle as Unidad_Medida, i.Detalle as IVA_Detalle 
+        $cadena = /*SELECT p.*, u.Detalle as Unidad_Medida, i.Detalle as IVA_Detalle 
                    FROM `Productos` p 
                    INNER JOIN Unidad_Medida u ON p.idProductos = u.idUnidad_Medida 
                    INNER JOIN IVA i ON p.Graba_IVA = i.idIVA 
-                   WHERE p.idProductos = $idProductos";
+                   WHERE p.idProductos = $idProductos*/
+
+            "SELECT
+            p.idProductos,
+            p.Codigo_Barras,
+            p.Nombre_Producto,
+            p.Graba_IVA,
+            u.idUnidad_Medida AS Unidad_Medida_idUnidad_Medida,
+            u.Detalle AS Unidad_Medida,
+            i.idIVA AS IVA_idIVA,
+            i.Detalle AS IVA_Detalle,
+            k.Cantidad,
+            k.Fecha_Transaccion,
+            k.Valor_Compra,
+            k.Valor_Venta,
+            k.Tipo_Transaccion,
+            k.Proveedores_idProveedores,
+            k.idKardex
+ 
+        FROM
+            `Productos` p
+        INNER JOIN `Kardex` k ON
+            p.idProductos = k.Productos_idProductos
+        INNER JOIN `Unidad_Medida` u ON
+            k.Unidad_Medida_idUnidad_Medida = u.idUnidad_Medida
+        INNER JOIN `IVA` i ON
+            k.IVA_idIVA = i.idIVA
+        WHERE
+            k.`Estado` = 1";
+        /*and p.idProductos=$idProductos
+            AND k.idKardex =$idKardex*/
         $datos = mysqli_query($con, $cadena);
         $con->close();
         return $datos;
